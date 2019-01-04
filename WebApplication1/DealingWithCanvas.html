@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #toolbar {
+            background-color: black;
+            height: 50px;
+            padding-top: 20px;
+            user-select: none;
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+        span {
+            padding: 10px 20px;
+            font-size: 20px;
+        }
+
+        .incdec {
+            background-color: lightblue;
+            border-radius: 50px;
+        }
+
+            .incdec:hover {
+                background-color: lightgreen;
+                cursor: pointer;
+            }
+
+        .color {
+            border: none;
+        }
+
+            .color:hover {
+                border: 2px solid white;
+                cursor: pointer;
+            }
+
+        .active {
+            border: 2px solid white;
+            background-color: lightgreen;
+        }
+    </style>
+    <script>
+        function inc() {
+            counter++;
+            radiusVal.innerText = counter;
+        }
+        function dec() {
+            counter--;
+            if (counter < 10)
+                counter = 10;
+            radiusVal.innerText = counter;
+        }
+
+        function restBtnStyles(e) {
+            triangle.className = "incdec";
+            rectangle.className = "incdec";
+            circle.className = "incdec";
+
+            e.target.className += " active";
+            switch (e.target.id) {
+                case 'circ':
+                    mycanvas.addEventListener('mousedown', addEventCirc);
+                    mycanvas.removeEventListener('mousedown', addEventRec);
+                    mycanvas.removeEventListener('mousedown', addEventTri);
+                    break;
+                case 'rec':
+
+                    mycanvas.addEventListener('mousedown', addEventRec);
+                    mycanvas.removeEventListener('mousedown', addEventTri);
+                    mycanvas.removeEventListener('mousedown', addEventCirc);
+                    break;
+                case 'tri':
+                    mycanvas.addEventListener('mousedown', addEventTri);
+                    mycanvas.removeEventListener('mousedown', addEventRec);
+                    mycanvas.removeEventListener('mousedown', addEventCirc);
+                    break;
+            }
+
+        }
+        function addEventCirc() {
+
+            mycanvas.addEventListener('mousemove', drawCircle);
+
+            mycanvas.addEventListener('mouseup', function () {
+                mycanvas.removeEventListener('mousedown', drawCircle);
+                mycanvas.removeEventListener('mousemove', drawCircle);
+
+            });
+        }
+        function addEventRec() {
+
+            mycanvas.addEventListener('mousemove', drawRectangle);
+
+            mycanvas.addEventListener('mouseup', function () {
+                mycanvas.removeEventListener('mousedown', drawRectangle);
+                mycanvas.removeEventListener('mousemove', drawRectangle);
+            });
+        }
+        function addEventTri() {
+            mycanvas.addEventListener('mousemove', drawTriangle);
+
+            mycanvas.addEventListener('mouseup', function () {
+                mycanvas.removeEventListener('mousedown', drawTriangle);
+                mycanvas.removeEventListener('mousemove', drawTriangle);
+            });
+        }
+
+        function drawCircle(e) {
+
+            context.beginPath();
+            context.arc(e.clientX, e.clientY, counter, 0, 2 * Math.PI);
+            context.fillStyle = localStorage.getItem('color');
+            context.fill();
+            context.closePath();
+        }
+        function drawRectangle(e) {
+
+            context.beginPath();
+            context.rect(e.clientX, e.clientY, 30, 20);
+            context.fillStyle = localStorage.getItem('color');
+            context.fill();
+            context.closePath();
+        }
+        function drawTriangle(e) {
+
+            context.beginPath();
+            context.fillStyle = localStorage.getItem('color');
+            context.moveTo(e.clientX, e.clientY);
+            context.lineTo(200, 200);
+            context.lineTo(100, 100);
+            context.fill();
+            context.closePath();
+        }
+        window.addEventListener('load', function () {
+
+            mycanvas = document.getElementById("mycanvas");
+            context = mycanvas.getContext('2d');
+
+            mycanvas.width = window.innerWidth;
+            mycanvas.height = window.innerHeight;
+
+            mycanvas.addEventListener('mousedown', addEventCirc);
+
+            toolbar = document.getElementById("toolbar");
+            radiusVal = document.getElementById('radiusVal');
+
+
+
+            circle = document.getElementById("circ");
+            rectangle = document.getElementById("rec");
+            triangle = document.getElementById("tri");
+
+            circle.addEventListener('click', restBtnStyles);
+            rectangle.addEventListener('click', restBtnStyles);
+            triangle.addEventListener('click', restBtnStyles);
+
+            counter = 10;
+
+            colorsArray = ['pink', 'yellow', 'purple', 'grey', 'red', 'green', 'blue'];
+
+            colorsArray.forEach(function (item) {
+                colorElem = document.createElement("span");
+
+                colorElem.className = "color";
+                colorElem.style.width = "60px";
+                colorElem.style.height = "60px";
+
+                colorElem.style.backgroundColor = item;
+                if (localStorage.getItem('color') == colorElem.style.backgroundColor) {
+                    colorElem.className += " active";
+                }
+                toolbar.appendChild(colorElem);
+            });//colors
+            colorSpans = document.getElementsByClassName('color');
+
+            for (let i = 0; i < colorSpans.length; i++) {
+                colorSpans[i].addEventListener('click', function () {
+                    for (var j = 0; j < colorSpans.length; j++)
+                        colorSpans[j].style.border = "none";
+
+                    this.style.border = "2px solid white";
+                    context.fillStyle = this.style.backgroundColor;
+
+                    localStorage.setItem('color', colorSpans[i].style.backgroundColor);
+                });//click color spans
+            }
+
+
+            var button = document.getElementById('btn-download');
+            button.addEventListener('click', function (e) {
+                var dataURL = mycanvas.toDataURL('image/png');
+                button.href = dataURL;
+            });
+
+        });//load
+    </script>
+</head>
+<body style="padding:0;margin:0;">
+    <div id="toolbar">
+        <span style="color:white">radius: </span>
+        <span style="color:white" id="radiusVal">10</span>
+        <span style="color:white" class="incdec" onclick="inc()">+</span>
+        <span style="color:white" class="incdec" onclick="dec()">-</span>
+
+        <a href="#" style="text-decoration:none" class="button" id="btn-download" download="my-file-name.png"><span class="incdec" style="color:white" id="savebtn">save</span></a>
+
+        <span style="color:white" class="incdec" id="tri">Triangle</span>
+        <span style="color:white" class="incdec active" id="circ">Circle</span>
+        <span style="color:white" class="incdec" id="rec">Rectangle</span>
+
+    </div>
+    <canvas id="mycanvas" style="display:block;margin:0;padding:0;width:100%">Sorry canvas is not supported at you!</canvas>
+
+
+</body>
+</html>
